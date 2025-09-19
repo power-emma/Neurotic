@@ -7,17 +7,21 @@
 // Arm Compiler
 // Emma Power - 2025
 
+
+
 int main () {
     FILE *fptr;
     FILE *wptr;
     
-    fptr = fopen("../test/add.asm", "r");
+    fptr = fopen("../test/fib.asm", "r");
     if (fptr == NULL) {
         printf("File not found");
         return 1;
     }
     // Open a file in writing mode
-    wptr = fopen("file.bin", "a");
+    wptr = fopen("fib.bin", "w");
+
+
 
     char nextLine[128] = "";
 
@@ -25,11 +29,15 @@ int main () {
         //printf("%s", nextLine);
         char currentWord[128] = "";
         char* operation = (char*) malloc(4*sizeof(char));       
-        char o1 = 0;
-        char o2 = 0;
-        char o3 = 0;
-
+        uint32_t o1 = 0;
+        uint32_t o2 = 0;
+        uint32_t o3 = 0;
+        // Register vs immediate flags
+        char r1 = 0;
+        char r2 = 0;
+        char r3 = 0;
         uint8_t currentPhase = 0;
+
         for (int i = 0; i < strlen(nextLine); i++) {
 
             if (nextLine[i] == ' ' || nextLine[i] == '\n') {
@@ -47,26 +55,36 @@ int main () {
                         break;
                     case 1:
                         if (currentWord[0] == 'r') {
-                            o1 = currentWord[1] - '0';
+                            currentWord[0] = ' ';
+                            o1 = atoi(currentWord);
+                            r1 = 1;
                         } else if (currentWord[0] == '#') {
-                            o1 = currentWord[1] - '0';
+                            currentWord[0] = ' ';
+                            o1 = atoi(currentWord);
                         }
                         
                         break;
                     case 2:
                         if (currentWord[0] == 'r') {
-                            o2 = currentWord[1] - '0';
+                            currentWord[0] = ' ';
+                            o2 = atoi(currentWord);
+                            r2 = 1;
                         } else if (currentWord[0] == '#') {
-                            o2 = currentWord[1] - '0';
+                            currentWord[0] = ' ';
+                            o2 = atoi(currentWord);
                         }
                         break;
                     case 3:
                         if (currentWord[0] == 'r') {
-                            o3 = currentWord[1] - '0';
+                            currentWord[0] = ' ';
+                            o3 = atoi(currentWord);
+                            r3 = 1;
                         } else if (currentWord[0] == '#') {
-                            o3 = currentWord[1] - '0';
+                            currentWord[0] = ' ';
+                            o3 = atoi(currentWord);
                         }
                         break;
+                    
                     default:
                         break;
                 }
@@ -92,17 +110,42 @@ int main () {
         uint32_t opcode;
         
 
-        if (!strcmp(operation, "ADD")) {
-            opcode = 0x02800000;
+        if (!strcmp(operation, "CMP")) {
+            opcode = 0x13400000;
+            opcode += o1 * 0x10000;
+            opcode += o2;
+            printf("Opcode: %X\n", opcode);
+
+        } if (!strcmp(operation, "ADD")) {
+            if (r3) {
+                opcode = 0x12800000;
+            } else {
+                opcode = 0x10800000;
+            }
             opcode += o2 * 0x10000;
             opcode += o1 * 0x1000;
             opcode += o3;
             printf("Opcode: %X\n", opcode);
 
         } else if (!strcmp(operation, "LDR")) {
-            opcode = 0x17D00000;
+            if (r2) {
+                opcode = 0x17D00000;
+            } else {
+                opcode = 0x15D00000;
+            }
             opcode += o1 * 0x1000;
             opcode += o2 * 0x1;
+            printf("Opcode: %X\n", opcode);
+        } else if (!strcmp(operation, "HLT")) {
+            opcode = 0xD4400000;
+            printf("Opcode: %X\n", opcode);
+        } else if (!strcmp(operation, "B")) {
+            opcode = 0xEA000000;
+            opcode += (o1 << 8) >> 8;
+            printf("Opcode: %X\n", opcode);
+        } else if (!strcmp(operation, "BEQ")) {
+            opcode = 0x0A000000;
+            opcode += (o1 << 8) >> 8;
             printf("Opcode: %X\n", opcode);
         }
 
