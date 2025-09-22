@@ -12,7 +12,7 @@
 int main () {
     FILE *fptr;
     FILE *wptr;
-    char file[] = "test/fib.asm";
+    char file[] = "test/hello_world.asm";
 
     fptr = fopen(file, "r");
     if (fptr == NULL) {
