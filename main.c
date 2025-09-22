@@ -1,4 +1,4 @@
-    #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 int main () {
     FILE *fptr;
     FILE *wptr;
-    char file[] = "test/test.asm";
+    char file[] = "test/fib.asm";
 
     fptr = fopen(file, "r");
     if (fptr == NULL) {
@@ -41,7 +41,7 @@ int main () {
 
         for (int i = 0; i < strlen(nextLine); i++) {
 
-            if (nextLine[i] == ' ' || nextLine[i] == '\n') {
+            if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
 
                 switch (currentPhase) {
                     case 0:
@@ -114,6 +114,8 @@ int main () {
                  
             } else if (nextLine[i] == ',') {
 
+            } else if (nextLine[i] == ';') {
+                break;
             } else {
                 currentWord[strlen(currentWord)] = nextLine[i];
                 //printf("Word: %s\n", currentWord);
