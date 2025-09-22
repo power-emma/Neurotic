@@ -1,4 +1,4 @@
-#include <stdio.h>
+    #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
@@ -12,14 +12,15 @@
 int main () {
     FILE *fptr;
     FILE *wptr;
-    
-    fptr = fopen("../test/fib.asm", "r");
+    char file[] = "test/test.asm";
+
+    fptr = fopen(file, "r");
     if (fptr == NULL) {
         printf("File not found");
         return 1;
     }
     // Open a file in writing mode
-    wptr = fopen("fib.bin", "w");
+    wptr = fopen(strcat(file, ".bin"), "w");
 
 
 
@@ -61,6 +62,11 @@ int main () {
                         } else if (currentWord[0] == '#') {
                             currentWord[0] = ' ';
                             o1 = atoi(currentWord);
+                        } else if (currentWord[0] == '[') {
+                            currentWord[strlen(currentWord)-1] = ' ';
+                            currentWord[0] = ' ';
+                            o1 = atoi(currentWord);
+                            r1 = 0;
                         }
                         
                         break;
@@ -72,6 +78,11 @@ int main () {
                         } else if (currentWord[0] == '#') {
                             currentWord[0] = ' ';
                             o2 = atoi(currentWord);
+                        } else if (currentWord[0] == '[') {
+                            currentWord[strlen(currentWord)-1] = ' ';
+                            currentWord[0] = ' ';
+                            o2 = atoi(currentWord);
+                            r2 = 0;
                         }
                         break;
                     case 3:
@@ -82,6 +93,11 @@ int main () {
                         } else if (currentWord[0] == '#') {
                             currentWord[0] = ' ';
                             o3 = atoi(currentWord);
+                        } else if (currentWord[0] == '[') {
+                            currentWord[strlen(currentWord)-1] = ' ';
+                            currentWord[0] = ' ';
+                            o3 = atoi(currentWord);
+                            r3 = 0;
                         }
                         break;
                     
@@ -108,15 +124,18 @@ int main () {
         printf("Instruction %s and operands %d %d %d :3\n", operation, o1, o2, o3);
 
         uint32_t opcode;
-        
 
-        if (!strcmp(operation, "CMP")) {
+        if (operation[0] == '0' && operation[1] == 'x') {
+            opcode = (uint32_t) strtoul(operation, NULL, 16);
+            printf("Opcode: %X\n", opcode);
+            
+        } else if (!strcmp(operation, "CMP")) {
             opcode = 0x13400000;
             opcode += o1 * 0x10000;
             opcode += o2;
             printf("Opcode: %X\n", opcode);
 
-        } if (!strcmp(operation, "ADD")) {
+        } else if (!strcmp(operation, "ADD")) {
             if (r3) {
                 opcode = 0x12800000;
             } else {
@@ -132,6 +151,15 @@ int main () {
                 opcode = 0x17D00000;
             } else {
                 opcode = 0x15D00000;
+            }
+            opcode += o1 * 0x1000;
+            opcode += o2 * 0x1;
+            printf("Opcode: %X\n", opcode);
+        }  else if (!strcmp(operation, "STR")) {
+            if (r2) {
+                opcode = 0x17E00000;
+            } else {
+                opcode = 0x15E00000;
             }
             opcode += o1 * 0x1000;
             opcode += o2 * 0x1;

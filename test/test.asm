@@ -1,0 +1,9 @@
+ADD r0, r0, #1
+ADD r1, r1, #160
+STR r1, r0
+LDR r2, [7]
+LDR r3, [8]
+STR r3, r2
+HLT
+0x00000010
+0xDEADBEEF
