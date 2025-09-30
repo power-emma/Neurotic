@@ -137,11 +137,237 @@ int main () {
             opcode += o2;
             printf("Opcode: %X\n", opcode);
 
-        } else if (!strcmp(operation, "ADD")) {
+        } 
+        // DP 0000
+        else if (!strcmp(operation, "AND")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x12000000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x10000000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 0001
+        else if (!strcmp(operation, "EOR")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x12200000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x10200000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        } 
+        
+        // DP 0010
+        else if (!strcmp(operation, "SUB")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x12400000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x10400000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 0011
+        else if (!strcmp(operation, "RSB")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x12600000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x10600000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        } 
+        
+        // DP 0100
+        else if (!strcmp(operation, "ADD")) {
             if (r3) {
                 opcode = 0x12800000;
             } else {
                 opcode = 0x10800000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        } 
+        // DP 0101
+        else if (!strcmp(operation, "ADC")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x12A00000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x10A00000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 0110
+        else if (!strcmp(operation, "SBC")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x12C00000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x10C00000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 0111
+        else if (!strcmp(operation, "RSC")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x12E00000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x10E00000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 1000
+        else if (!strcmp(operation, "TST")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13000000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11000000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 1001
+        else if (!strcmp(operation, "TEQ")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13200000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11200000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 1010
+        else if (!strcmp(operation, "CMP")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13400000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11400000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 1011
+        else if (!strcmp(operation, "CMN")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13600000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11600000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        } // DP 1100
+        else if (!strcmp(operation, "ORR")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13800000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11800000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        } // DP 1101
+        else if (!strcmp(operation, "MOV")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13A00000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11A00000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        }
+        // DP 1110
+        else if (!strcmp(operation, "BIC")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13C00000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11C00000;
+            }
+            opcode += o2 * 0x10000;
+            opcode += o1 * 0x1000;
+            opcode += o3;
+            printf("Opcode: %X\n", opcode);
+
+        } // DP 1111
+        else if (!strcmp(operation, "MVN")) {
+            if (r3) {
+                // 0001 001P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x13E00000;
+            } else {
+                // 0001 000P PPPS NNNN DDDD 2222 2222 2222
+                opcode = 0x11E00000;
             }
             opcode += o2 * 0x10000;
             opcode += o1 * 0x1000;
