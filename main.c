@@ -9,12 +9,39 @@
 
 
 
+
+int nameToAddress(char* name, char** varNames, int32_t varAddresses[]) {
+    if (name == NULL || name[0] == '\0') {
+        return -1;
+    }
+    //printf("in Address varNames[0] = %s\n", varNames[0]);
+    for (int i = 0; i < 32 && varNames[i] != NULL; i++) {
+        if (strcmp(varNames[i], name) == 0) {
+            
+            printf("Found variable %s at address %X\n", name, varAddresses[i]);
+
+            return (int) varAddresses[i];
+
+        } else {
+            //printf("Not %s and %s \n", varNames[i], name);
+        }
+    }
+    return -1;
+}
+
 int main () {
+
+
+    char** varNames = (char**) malloc(256*sizeof(char*));
+
+    int32_t* varAddresses = (int32_t*) malloc(256*sizeof(int32_t));   
+
     FILE *fptr;
     FILE *wptr;
     char file[] = "test/hello_world.asm";
 
     fptr = fopen(file, "r");
+
     if (fptr == NULL) {
         printf("File not found");
         return 1;
@@ -22,13 +49,66 @@ int main () {
     // Open a file in writing mode
     wptr = fopen(strcat(file, ".bin"), "w");
 
+    
 
 
     char nextLine[128] = "";
+    int currentLine = 0;
+    int nextVarAddress = 0;
 
+    // First Pass (Finding Variables)
     while (fgets(nextLine, 127, fptr)) {
-        //printf("%s", nextLine);
-        char currentWord[128] = "";
+        // Variables are always lowercase
+        // variable definition is always the first entry
+
+        int validWord = 1;
+            
+        char* currentWord = malloc(32*sizeof(char));
+        memset(currentWord,0x00,32);
+        for (int i = 0; i < strlen(nextLine) && validWord == 1; i++) {
+
+            if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
+                if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t' || currentWord[0] == 0x00) {
+                    // Empty word 
+                    validWord = 0;
+                } else if (validWord) {
+                    varNames[nextVarAddress] = malloc(sizeof(char) * (strlen(currentWord) + 1));
+                    varNames[nextVarAddress] = currentWord;
+                    varAddresses[nextVarAddress] = currentLine;
+                    validWord = 0;
+                    printf("Word: %s At address %d in array location %d\n", varNames[nextVarAddress],  varAddresses[nextVarAddress], nextVarAddress);
+                    nextVarAddress ++;
+                }
+
+
+            } else if (nextLine[i] == ',') {
+
+            } else if (nextLine[i] == ';') {
+                break;
+            } else if (nextLine[i] < 'A' || nextLine[i] > 'Z') {
+                // Not uppercase = not an instruction
+                currentWord[strlen(currentWord)] = nextLine[i];
+                //printf("Word: %s\n", currentWord);
+            } else {
+                validWord = 0;
+                break;
+            }
+
+        }
+        currentLine ++;
+    }
+    printf("varNames[0] = %s\n", varNames[0]);
+    nameToAddress("", varNames, varAddresses);
+    currentLine = 0;
+    FILE *fptr2;
+    fptr2 = fopen("test/hello_world.asm", "r");
+
+    // Second Pass (Assembling)
+    while (fgets(nextLine, 127, fptr2)) {
+        printf("Nest: %s", nextLine);
+
+        char* currentWord = malloc(32*sizeof(char));
+        memset(currentWord,0x00,32);
         char* operation = (char*) malloc(4*sizeof(char));       
         uint32_t o1 = 0;
         uint32_t o2 = 0;
@@ -45,6 +125,18 @@ int main () {
 
                 switch (currentPhase) {
                     case 0:
+                        if (currentWord[0] > 'a' && currentWord[0] < 'z') {
+                            // label
+                            currentPhase --;
+                            break;
+                        }
+                        else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
+                            // Empty word 
+                            currentPhase --;
+                            // printf("Empty Word\n");
+                            break;
+                        }
+
                         //printf("Current Word: \"%s\"\n", currentWord);
                         for (int j = 0; j < strlen(currentWord); j++) {
 
@@ -55,7 +147,7 @@ int main () {
                         //printf("Current Word: \"%s\"\n", operation);
                         break;
                     case 1:
-                        if (currentWord[0] == 'r') {
+                        if (currentWord[0] == 'r' && currentWord[1] >= '0' && currentWord[1] <= '9') {
                             currentWord[0] = ' ';
                             o1 = atoi(currentWord);
                             r1 = 1;
@@ -67,6 +159,17 @@ int main () {
                             currentWord[0] = ' ';
                             o1 = atoi(currentWord);
                             r1 = 0;
+                        } else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
+                            // Empty word 
+                            currentPhase --;
+                            // printf("Empty Word\n");
+                            break;
+                        } else {
+                            int globalAddress = nameToAddress(currentWord, varNames, varAddresses);
+                            int relativeAddress = globalAddress - currentLine;
+                            o1 = relativeAddress;
+                            r1 = 0;
+                            printf("Variable %s at address %X\n", currentWord, relativeAddress);
                         }
                         
                         break;
@@ -83,6 +186,17 @@ int main () {
                             currentWord[0] = ' ';
                             o2 = atoi(currentWord);
                             r2 = 0;
+                        } else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
+                            // Empty word 
+                            currentPhase --;
+                            // printf("Empty Word\n");
+                            break;
+                        } else {
+                            int globalAddress = nameToAddress(currentWord, varNames, varAddresses);
+                            int relativeAddress = globalAddress - currentLine;
+                            o2 = relativeAddress;
+                            r2 = 0;
+                            printf("Variable %s at address %X\n", currentWord, varAddresses[globalAddress]);
                         }
                         break;
                     case 3:
@@ -98,6 +212,17 @@ int main () {
                             currentWord[0] = ' ';
                             o3 = atoi(currentWord);
                             r3 = 0;
+                        } else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
+                            // Empty word 
+                            currentPhase --;
+                            // printf("Empty Word\n");
+                            break;
+                        } else {
+                            int globalAddress = nameToAddress(currentWord, varNames, varAddresses);
+                            int relativeAddress = globalAddress - currentLine;
+                            o3 = relativeAddress;
+                            r3 = 0;
+                            printf("Variable %s at address %X\n", currentWord, varAddresses[globalAddress]);
                         }
                         break;
                     
@@ -107,7 +232,8 @@ int main () {
 
                 
                 // Clear Word
-                memset(currentWord,0,strlen(currentWord));
+
+                memset(currentWord,0x00,32);
 
                 currentPhase ++;
 
@@ -121,7 +247,10 @@ int main () {
                 //printf("Word: %s\n", currentWord);
             }
 
+            
+
         }
+        currentLine ++;
         //printf("\"%s\"\n", operation);
         printf("Instruction %s and operands %d %d %d :3\n", operation, o1, o2, o3);
 
