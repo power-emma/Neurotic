@@ -30,8 +30,9 @@ int nameToAddress(char* name, char** varNames, int32_t varAddresses[]) {
 }
 
 int main () {
-    char file[] = "test/tranquil_hello.asm";
-
+    char file[] = "./test/tranquil_hello.asm";
+    char* file1 = malloc(strlen(file) * sizeof(char));
+    strcpy(file1, file);
     char** varNames = (char**) malloc(256*sizeof(char*));
 
     int32_t* varAddresses = (int32_t*) malloc(256*sizeof(int32_t));   
@@ -40,16 +41,12 @@ int main () {
     FILE *wptr;
 
 
-    fptr = fopen(file, "r");
+    fptr = fopen(file1, "r");
 
     if (fptr == NULL) {
         printf("File not found");
         return 1;
     }
-    // Open a file in writing mode
-    wptr = fopen(strcat(file, ".bin"), "w");
-
-    
 
 
     char nextLine[10000] = "";
@@ -102,10 +99,12 @@ int main () {
     nameToAddress("", varNames, varAddresses);
     currentLine = 0;
     FILE *fptr2;
-    char* file2 = malloc(strlen(file) * sizeof(char))
-    strcpy(file2, file)
+    char* file2 = malloc(strlen(file) * sizeof(char));
+    strcpy(file2, file);
+    
     fptr2 = fopen(file2, "r");
-
+    // Open a file in writing mode
+    wptr = fopen(strcat(file, ".bin"), "w");
     // Second Pass (Assembling)
     while (fgets(nextLine, 10000, fptr2)) {
         printf("Next: %s", nextLine);

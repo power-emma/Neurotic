@@ -9,4 +9,4 @@ print_loop      ADD r3, r3, #1          ; Increment r2 and r3
                 B print_loop                  ; Else loop to Line 3
 print_end       HLT
 tx_fifo         0xF0000000              ; TX_FIFO = 0xF0000000
-string          "Hello World! :3"
+string          "Hello World! :3\n"
