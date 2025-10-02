@@ -30,7 +30,7 @@ int nameToAddress(char* name, char** varNames, int32_t varAddresses[]) {
 }
 
 int main () {
-
+    char file[] = "test/tranquil_hello.asm";
 
     char** varNames = (char**) malloc(256*sizeof(char*));
 
@@ -38,7 +38,7 @@ int main () {
 
     FILE *fptr;
     FILE *wptr;
-    char file[] = "test/hello_world.asm";
+
 
     fptr = fopen(file, "r");
 
@@ -52,7 +52,7 @@ int main () {
     
 
 
-    char nextLine[128] = "";
+    char nextLine[10000] = "";
     int currentLine = 0;
     int nextVarAddress = 0;
 
@@ -63,8 +63,8 @@ int main () {
 
         int validWord = 1;
             
-        char* currentWord = malloc(32*sizeof(char));
-        memset(currentWord,0x00,32);
+        char* currentWord = malloc(1000*sizeof(char));
+        memset(currentWord,0x00,1000);
         for (int i = 0; i < strlen(nextLine) && validWord == 1; i++) {
 
             if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
@@ -78,6 +78,7 @@ int main () {
                     validWord = 0;
                     printf("Word: %s At address %d in array location %d\n", varNames[nextVarAddress],  varAddresses[nextVarAddress], nextVarAddress);
                     nextVarAddress ++;
+                    break;
                 }
 
 
@@ -101,14 +102,16 @@ int main () {
     nameToAddress("", varNames, varAddresses);
     currentLine = 0;
     FILE *fptr2;
-    fptr2 = fopen("test/hello_world.asm", "r");
+    char* file2 = malloc(strlen(file) * sizeof(char))
+    strcpy(file2, file)
+    fptr2 = fopen(file2, "r");
 
     // Second Pass (Assembling)
-    while (fgets(nextLine, 127, fptr2)) {
-        printf("Nest: %s", nextLine);
+    while (fgets(nextLine, 10000, fptr2)) {
+        printf("Next: %s", nextLine);
 
-        char* currentWord = malloc(32*sizeof(char));
-        memset(currentWord,0x00,32);
+        char* currentWord = malloc(10000*sizeof(char));
+        memset(currentWord,0x00,10000);
         char* operation = (char*) malloc(4*sizeof(char));       
         uint32_t o1 = 0;
         uint32_t o2 = 0;
@@ -137,7 +140,7 @@ int main () {
                             break;
                         }
 
-                        //printf("Current Word: \"%s\"\n", currentWord);
+                        printf("Current Word: \"%s\"\n", currentWord);
                         for (int j = 0; j < strlen(currentWord); j++) {
 
                             operation[j] = currentWord[j];
@@ -256,7 +259,54 @@ int main () {
 
         uint32_t opcode;
 
-        if (operation[0] == '0' && operation[1] == 'x') {
+        if (operation[0] == '\"') {
+            printf("Here!\n");
+            int start = 0;
+            for (int i = 1; nextLine[i] != '\"'; i++) {
+                start ++;
+            }
+            for (int i = start + 2; nextLine[i] != '\"'; i++) {
+                if (nextLine[i] == '\\') {
+                    switch (nextLine[i + 1]) {
+                        case 'a':
+                            opcode = '\a';
+                            break;
+                        case 'b':
+                            opcode = '\b';
+                            break;
+                        case 'f':
+                            opcode = '\f';
+                            break;
+                        case 'n':
+                            opcode = '\n';
+                            break;
+                        case 'r':
+                            opcode = '\r';
+                            break;
+                        case 't':
+                            opcode = '\t';
+                            break;
+                        case 'v':
+                            opcode = '\v';
+                            break;
+                        case '0':
+                            opcode = '\0';
+                            break;
+                        default:
+                            opcode = nextLine[i+1];
+                            break;
+                    }
+                    i++;
+                } else {
+                    opcode = nextLine[i];
+                }
+                fwrite(&opcode, 4, 1, wptr);
+                //printf("wrotes %c to file\n", opcode);
+            }
+            opcode = '\0';
+            fwrite(&opcode, 4, 1, wptr);
+            break;
+        } else if (operation[0] == '0' && operation[1] == 'x') {
             opcode = (uint32_t) strtoul(operation, NULL, 16);
             printf("Opcode: %X\n", opcode);
             
