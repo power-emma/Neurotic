@@ -54,38 +54,64 @@ int main () {
     int nextVarAddress = 0;
 
     // First Pass (Finding Variables)
-    while (fgets(nextLine, 127, fptr)) {
+    while (fgets(nextLine, 10000, fptr)) {
         // Variables are always lowercase
         // variable definition is always the first entry
 
         int validWord = 1;
-            
-        char* currentWord = malloc(1000*sizeof(char));
-        memset(currentWord,0x00,1000);
+        int stringCount = 0;
+        char* currentWord = malloc(10000*sizeof(char));
+        memset(currentWord,0x00,10000);
         for (int i = 0; i < strlen(nextLine) && validWord == 1; i++) {
 
             if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
-                if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t' || currentWord[0] == 0x00) {
+                if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
                     // Empty word 
-                    validWord = 0;
-                } else if (validWord) {
+                    // validWord = 0;
+                } else if (validWord && currentWord[0] >= 'a' && currentWord[0] <= 'z') {
                     varNames[nextVarAddress] = malloc(sizeof(char) * (strlen(currentWord) + 1));
                     varNames[nextVarAddress] = currentWord;
                     varAddresses[nextVarAddress] = currentLine;
                     validWord = 0;
                     printf("Word: %s At address %d in array location %d\n", varNames[nextVarAddress],  varAddresses[nextVarAddress], nextVarAddress);
                     nextVarAddress ++;
+                    printf("Strlen = %d\n", strlen(nextLine));
+                    for (int j = i; j < strlen(nextLine); j++) {
+                        if (nextLine[j] == '\"') {
+                            if (stringCount == 1) {
+                                currentLine = currentLine + 1;
+                                printf("Ended String!, %c\n", nextLine[j]);
+                                stringCount = 0;
+                                // account for \0
+                            } else {
+                                stringCount = 1;
+                                printf("Started String!, %c\n", nextLine[j]);
+                            }
+
+
+                        }
+                        else if (nextLine[j] == '\\') {
+                            j = j++;
+                            currentLine ++;
+                            
+                        }
+                        else if (stringCount) {
+                            currentLine ++;
+                        } else {
+                            printf("Not a string, breaking, %c\n", nextLine[j]);
+                        }
+                    }
                     break;
                 }
-
-
-            } else if (nextLine[i] == ',') {
-
-            } else if (nextLine[i] == ';') {
-                break;
+            }else if (nextLine[i] == '\\') {
+                i ++;
+                
             } else if (nextLine[i] < 'A' || nextLine[i] > 'Z') {
                 // Not uppercase = not an instruction
                 currentWord[strlen(currentWord)] = nextLine[i];
+                if(stringCount) {
+                    currentLine ++;
+                }
                 //printf("Word: %s\n", currentWord);
             } else {
                 validWord = 0;
@@ -105,6 +131,7 @@ int main () {
     fptr2 = fopen(file2, "r");
     // Open a file in writing mode
     wptr = fopen(strcat(file, ".bin"), "w");
+
     // Second Pass (Assembling)
     while (fgets(nextLine, 10000, fptr2)) {
         printf("Next: %s", nextLine);
@@ -120,7 +147,7 @@ int main () {
         char r2 = 0;
         char r3 = 0;
         uint8_t currentPhase = 0;
-
+        printf("Current Line: %d\n", currentLine);
         for (int i = 0; i < strlen(nextLine); i++) {
 
             if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
@@ -300,11 +327,13 @@ int main () {
                     opcode = nextLine[i];
                 }
                 fwrite(&opcode, 4, 1, wptr);
+
                 //printf("wrotes %c to file\n", opcode);
             }
             opcode = '\0';
             fwrite(&opcode, 4, 1, wptr);
-            break;
+            currentLine ++;
+
         } else if (operation[0] == '0' && operation[1] == 'x') {
             opcode = (uint32_t) strtoul(operation, NULL, 16);
             printf("Opcode: %X\n", opcode);
