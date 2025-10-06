@@ -30,7 +30,7 @@ int nameToAddress(char* name, char** varNames, int32_t varAddresses[]) {
 }
 
 int main () {
-    char file[] = "./test/tranquil_hello.asm";
+    char file[] = "./test/hello_world.asm";
     char* file1 = malloc(strlen(file) * sizeof(char));
     strcpy(file1, file);
     char** varNames = (char**) malloc(256*sizeof(char*));
@@ -137,7 +137,7 @@ int main () {
         printf("Next: %s", nextLine);
 
         char* currentWord = malloc(10000*sizeof(char));
-        memset(currentWord,0x00,10000);
+        memset(currentWord,0x00,4000);
         char* operation = (char*) malloc(4*sizeof(char));       
         uint32_t o1 = 0;
         uint32_t o2 = 0;
