@@ -1,5 +1,5 @@
 ![Neurotic Assembler](hello_hex.png)
-# Neurotic - An Experimental* ARM Assemvler
+# Neurotic - An Experimental* ARM Assembler
 *Experimental in this case means filled with bugs and is unfaithful in many ways to the actual ARM architecture in ways I could not forsee
 # Features
 - Compatible with my ARM Emulator, [Tranquil](https://github.com/power-emma/Tranquil)
