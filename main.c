@@ -30,7 +30,7 @@ int nameToAddress(char* name, char** varNames, int32_t varAddresses[]) {
 }
 
 int main () {
-    char file[] = "./test/print_num.asm";
+    char file[] = "./test/fib_uart.asm";
     char* file1 = malloc(strlen(file) * sizeof(char));
     strcpy(file1, file);
     char** varNames = (char**) malloc(256*sizeof(char*));

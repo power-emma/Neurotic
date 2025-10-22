@@ -1,35 +1,49 @@
-ADD r0, r0, #1  ; Set r0 to 1
-ADD r2, r1, r0  ; Start of Loop r2 = r1 + r0 
-ADD r0, r1, #0  ; Copy r0 into r1
-ADD r1, r2, #0  ; Copy r2 into r1
-ADD r5, r2, #0  ; Copy r2 into r5
-ADD r3, r3, #1  ; Increment r3 (Loop Counter)
-CMP r3, #40     ; Compare r3 and 40
-BEQ #1          ; If r3 = 40 skip the next line
-B #-8           ; Else; Loop back to line 2
-HLT
-LDR r0, [10]        ; Load Address of TX_FIFO into register 2
-ADD r2, r2, #10     ; Load r2 with Address of 1st letter of string
-ADD r3, r3, #1      ; Increment r2 and r3
-ADD r2, r2, #1
-LDR r1, r2          ; Load Next Letter (Memory at r2) into r1
-STR r1, r0          ; Store r1 into TX_FIFO (UART_TX)
-CMP r3, #16         ; Compare current loops with total length
-BEQ #1              ; If == 16 then halt
-B #-7               ; Else loop to Line 3
-0xF0000000          ; TX_FIFO = 0xF0000000
-0x48    ;H
-0x65    ;e
-0x6C    ;l
-0x6C    ;l
-0x6F    ;o
-0x20    ;(space)
-0x77    ;w
-0x6F    ;o
-0x72    ;r
-0x6C    ;l
-0x64    ;d
-0x20    ;(space)
-0x3A    ;:
-0x33    ;3
-0x0A    ;\n
+; Hex Fibonacci Printer - Emma Power - October 22, 2025
+; Start of Program
+start   LDR r1, mask    ; Load bitmask
+        LDR r4, tx_fifo ; Load TX_FIFO
+        MOV r8, #1
+        MOV r9, #0
+fib     LDR r13, sp_st  ; Set Stack Pointer start
+        LDR r5, sp_st   ; Remember original stack pointer
+        ADD r5, r5, #4  ; Offset it by 4 so the future loop reads the last char
+        ADD r6, r6, #1
+        ADD r10, r9, r8
+        MOV r8, r9
+        MOV r9, r10
+        MOV r0, r10
+
+; Loop over digits and add them to stack
+loopa   AND r2, r1, r0  ; Get last 4 bits of r0 using mask in r2
+        STR r2, r13     ; Store in stack
+        SUB r13, r13, #4        ; Decrement Stack Pointer
+        MOV r0, r0, LSR #4      ; Shift r0 right 4 bits
+        CMP r0, #0      ; Check if r0 is empty (full number is in stack)
+        BNE loopa       ; Loop if not empty
+        ADD r13, r13, #4        ; Increment Stack Pointer
+
+; Loop over stack and print their hex representations
+loopc   CMP r13, r5     ; See if stack pointer is equal to its start
+        BEQ end         ; Branch if stack is empty
+        LDR r2, r13     ; Load r2 with number at stack pointer
+        ADD r13, r13, #4        ; Increment Stack Pointer
+        CMP r2, #10     ; Compare r2 with 10
+        BHS letter      ; Branch if r2 >= 10
+number  ADD r2, r2, #48 ; Make r2 an Ascii #
+        STR r2, r4      ; Store r1 into TX_FIFO (UART_TX)
+        B loopc
+letter  ADD r2, r2, #55 ; Make r2 an Ascii Letter
+        STR r2, r4      ; Store r1 into TX_FIFO (UART_TX)
+        B loopc
+
+; End
+end     MOV r2, #10
+        STR r2, r4      ; Store r1 into TX_FIFO (UART_TX)
+        CMP r6, #10
+        BNE fib
+        HLT
+
+; Values
+mask    0x0000000F      ; 4 Bit mask
+sp_st   0x00000100      ; Stack pointer start position
+tx_fifo 0xF0000000      ; TX_FIFO = UART controller address
