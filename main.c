@@ -65,7 +65,12 @@ int main () {
         for (int i = 0; i < strlen(nextLine) && validWord == 1; i++) {
 
             if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
-                if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
+                if (nextLine[0] == '\n' || nextLine[0] == ';') {
+                            printf("Blank Line found\n");
+                            i = strlen(nextLine);
+                            currentLine --;
+                            break;
+                } else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
                     // Empty word 
                     // validWord = 0;
                 } else if (validWord && currentWord[0] >= 'a' && currentWord[0] <= 'z') {
@@ -149,9 +154,10 @@ int main () {
         char r3 = 0;
         uint8_t currentPhase = 0;
         printf("Current Line: %d\n", currentLine);
+        
         for (int i = 0; i < strlen(nextLine); i++) {
 
-            if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
+            if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t' || nextLine[i] == ';'  || nextLine[i] == '\n') {
 
                 switch (currentPhase) {
                     case 0:
@@ -159,15 +165,20 @@ int main () {
                             // label
                             currentPhase --;
                             break;
+                        } else if (nextLine[0] == '\n' || nextLine[0] == ';') {
+                            printf("Blank Line found\n");
+                            i = strlen(nextLine);
+                            currentLine --;
+                            break;
                         }
-                        else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
+                        else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\t')  {
                             // Empty word 
                             currentPhase --;
                             // printf("Empty Word\n");
                             break;
-                        }
+                        } 
 
-                        printf("Current Word: \"%s\"\n", currentWord);
+                        printf("Current Woerd: \"%s\"\n", currentWord);
                         for (int j = 0; j < strlen(currentWord); j++) {
 
                             operation[j] = currentWord[j];
