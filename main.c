@@ -30,7 +30,7 @@ int nameToAddress(char* name, char** varNames, int32_t varAddresses[]) {
 }
 
 int main () {
-    char file[] = "./test/hello_world.asm";
+    char file[] = "./test/print_num.asm";
     char* file1 = malloc(strlen(file) * sizeof(char));
     strcpy(file1, file);
     char** varNames = (char**) malloc(256*sizeof(char*));
@@ -98,7 +98,7 @@ int main () {
                         else if (stringCount) {
                             currentLine ++;
                         } else {
-                            printf("Not a string, breaking, %c\n", nextLine[j]);
+                            //printf("Not a string, breaking, %c\n", nextLine[j]);
                         }
                     }
                     break;
@@ -142,6 +142,7 @@ int main () {
         uint32_t o1 = 0;
         uint32_t o2 = 0;
         uint32_t o3 = 0;
+        uint32_t shift = 0;
         // Register vs immediate flags
         char r1 = 0;
         char r2 = 0;
@@ -210,6 +211,7 @@ int main () {
                         } else if (currentWord[0] == '#') {
                             currentWord[0] = ' ';
                             o2 = atoi(currentWord);
+                            r2 = 0;
                         } else if (currentWord[0] == '[') {
                             currentWord[strlen(currentWord)-1] = ' ';
                             currentWord[0] = ' ';
@@ -234,8 +236,13 @@ int main () {
                             o3 = atoi(currentWord);
                             r3 = 1;
                         } else if (currentWord[0] == '#') {
+                            if (shift == 0) {
                             currentWord[0] = ' ';
                             o3 = atoi(currentWord);
+                            } else {
+                                currentWord[0] = ' ';
+                                shift += atoi(currentWord) << 3;
+                            }
                         } else if (currentWord[0] == '[') {
                             currentWord[strlen(currentWord)-1] = ' ';
                             currentWord[0] = ' ';
@@ -243,16 +250,37 @@ int main () {
                             r3 = 0;
                         } else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
                             // Empty word 
-                            currentPhase --;
                             // printf("Empty Word\n");
                             break;
-                        } else {
+                        // Barrel Shifter Operand
+                        } else if (currentWord[0] >= 'A' && currentWord[0] <= 'Z') {
+                            printf("Barrel Shifter Detected: %s\n", currentWord);
+                            // Shift 00
+                            if (!strcmp(currentWord, "LSL")) {
+                                shift = 0x00;
+                            // Shift 01
+                            } else if (!strcmp(currentWord, "LSR")) {
+                                shift = 0x02;
+                            }
+                            // Shift 10
+                            else if (!strcmp(currentWord, "ASR")) {
+                                shift = 0x04;
+                            } 
+                            else if (!strcmp(currentWord, "CSR")) {
+                                shift = 0x06;
+                            }
+
+
+                        }
+                        else {
                             int globalAddress = nameToAddress(currentWord, varNames, varAddresses);
                             int relativeAddress = globalAddress - currentLine;
                             o3 = relativeAddress;
                             r3 = 0;
                             printf("Variable %s at address %X\n", currentWord, varAddresses[globalAddress]);
                         }
+
+                        currentPhase --;
                         break;
                     
                     default:
@@ -338,12 +366,6 @@ int main () {
             opcode = (uint32_t) strtoul(operation, NULL, 16);
             printf("Opcode: %X\n", opcode);
             
-        } else if (!strcmp(operation, "CMP")) {
-            opcode = 0x13400000;
-            opcode += o1 * 0x10000;
-            opcode += o2;
-            printf("Opcode: %X\n", opcode);
-
         } 
         // DP 0000
         else if (!strcmp(operation, "AND")) {
@@ -497,16 +519,16 @@ int main () {
         }
         // DP 1010
         else if (!strcmp(operation, "CMP")) {
-            if (r3) {
+            printf("Immediate Flag for CMP: %d\n", r2);
+            if (!r2) {
                 // 0001 001P PPPS NNNN DDDD 2222 2222 2222
                 opcode = 0x13400000;
             } else {
                 // 0001 000P PPPS NNNN DDDD 2222 2222 2222
                 opcode = 0x11400000;
             }
-            opcode += o2 * 0x10000;
-            opcode += o1 * 0x1000;
-            opcode += o3;
+            opcode += o1 * 0x10000;
+            opcode += o2;
             printf("Opcode: %X\n", opcode);
 
         }
@@ -540,16 +562,16 @@ int main () {
 
         } // DP 1101
         else if (!strcmp(operation, "MOV")) {
-            if (r3) {
+            if (r2) {
                 // 0001 001P PPPS NNNN DDDD 2222 2222 2222
                 opcode = 0x13A00000;
             } else {
                 // 0001 000P PPPS NNNN DDDD 2222 2222 2222
                 opcode = 0x11A00000;
             }
-            opcode += o2 * 0x10000;
+
             opcode += o1 * 0x1000;
-            opcode += o3;
+            opcode += o2;
             printf("Opcode: %X\n", opcode);
 
         }
@@ -582,10 +604,11 @@ int main () {
             printf("Opcode: %X\n", opcode);
 
         } else if (!strcmp(operation, "LDR")) {
+            printf("Immediate Flag for LDR: %d\n", r2);
             if (r2) {
-                opcode = 0x17D00000;
-            } else {
                 opcode = 0x15D00000;
+            } else {
+                opcode = 0x17D00000;
             }
             opcode += o1 * 0x1000;
             opcode += o2 * 0x1;
@@ -602,16 +625,42 @@ int main () {
         } else if (!strcmp(operation, "HLT")) {
             opcode = 0xD4400000;
             printf("Opcode: %X\n", opcode);
+        // Branch 1110
         } else if (!strcmp(operation, "B")) {
             opcode = 0xEA000000;
             opcode += (o1 << 8) >> 8;
             printf("Opcode: %X\n", opcode);
+        // Branch 0000
         } else if (!strcmp(operation, "BEQ")) {
             opcode = 0x0A000000;
             opcode += (o1 << 8) >> 8;
             printf("Opcode: %X\n", opcode);
+        // Branch 0001
+        } else if (!strcmp(operation, "BNE")) {
+            opcode = 0x1A000000;
+            opcode += (o1 << 8) >> 8;
+            printf("Opcode: %X\n", opcode);
+        //Branch 0010
+        } else if (!strcmp(operation, "BHS")) {
+            opcode = 0x2A000000;
+            opcode += (o1 << 8) >> 8;
+            printf("Opcode: %X\n", opcode);
+        }
+        //Branch 0011
+        else if (!strcmp(operation, "BLO")) {
+            opcode = 0x3A000000;
+            opcode += (o1 << 8) >> 8;
+            printf("Opcode: %X\n", opcode);
+        }
+        else {
+            printf("Unknown operation: %s\n", operation);
+            continue;
         }
 
+        if (shift != 0) {
+            opcode += (shift << 4);
+            printf("With Shift: %X\n", opcode);
+        }
         
 
         // Write some text to the file
