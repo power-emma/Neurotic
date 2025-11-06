@@ -60,14 +60,20 @@ int main () {
 
         int validWord = 1;
         int stringCount = 0;
+        int stringEver = 0;
+        int blank = 0;
         char* currentWord = malloc(10000*sizeof(char));
         memset(currentWord,0x00,10000);
+        int startAdd = currentLine;
         for (int i = 0; i < strlen(nextLine) && validWord == 1; i++) {
 
             if (nextLine[i] == ' ' || nextLine[i] == '\n' || nextLine[i] == '\t') {
                 if (nextLine[0] == '\n' || nextLine[0] == ';') {
                             printf("Blank Line found\n");
+                            // Force For Loop End
                             i = strlen(nextLine);
+                            // Dont Count This
+                            blank = 1;
                             currentLine --;
                             break;
                 } else if (currentWord[0] == ' ' || currentWord[0] == '\0' || currentWord[0] == '\n' || currentWord[0] == '\t') {
@@ -82,22 +88,20 @@ int main () {
                     nextVarAddress ++;
                     printf("Strlen = %d\n", strlen(nextLine));
                     for (int j = i; j < strlen(nextLine); j++) {
+
                         if (nextLine[j] == '\"') {
                             if (stringCount == 1) {
                                 currentLine = currentLine + 1;
                                 printf("Ended String!, %c\n", nextLine[j]);
                                 stringCount = 0;
-                                // account for \0
                             } else {
                                 stringCount = 1;
+                                stringEver = 1;
                                 printf("Started String!, %c\n", nextLine[j]);
                             }
-
-
                         }
                         else if (nextLine[j] == '\\') {
                             j = j++;
-                            currentLine ++;
                             
                         }
                         else if (stringCount) {
@@ -108,7 +112,7 @@ int main () {
                     }
                     break;
                 }
-            }else if (nextLine[i] == '\\') {
+            } else if (nextLine[i] == '\\') {
                 i ++;
                 
             } else if (nextLine[i] < 'A' || nextLine[i] > 'Z') {
@@ -124,7 +128,14 @@ int main () {
             }
 
         }
-        currentLine ++;
+        if(stringEver) {
+            printf("Used %d words of memory\n", currentLine - startAdd);
+        } else {
+            currentLine = startAdd;
+        }
+        if (!blank) {
+            currentLine ++;
+        }
     }
     printf("varNames[0] = %s\n", varNames[0]);
     nameToAddress("", varNames, varAddresses);

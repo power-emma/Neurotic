@@ -1,9 +1,13 @@
 ; Hex Fibonacci Printer - Emma Power - October 22, 2025
 ; Start of Program
-start   LDR r1, mask    ; Load bitmask
+start   MOV r0, #0
+        ADD r0, r15, intro       ; Load r2 with Address of 1st letter of string
+        B print
+resume  LDR r1, mask    ; Load bitmask
         LDR r4, tx_fifo ; Load TX_FIFO
         MOV r8, #1
         MOV r9, #0
+
 fib     LDR r13, sp_st  ; Set Stack Pointer start
         LDR r5, sp_st   ; Remember original stack pointer
         ADD r5, r5, #4  ; Offset it by 4 so the future loop reads the last char
@@ -43,7 +47,20 @@ end     MOV r2, #10
         BNE fib
         HLT
 
-; Values
+; Print Subroutine
+; r0 Must contain the memory address of the first char of the string
+print           LDR r2, tx_fifo         ; Load Address of TX_FIFO into register 0
+                MOV r3, #0
+print_loop      ADD r3, r3, #1          ; Increment r2 and r3    
+                LDR r1, r0              ; Load Next Letter (Memory at r2) into r1
+                CMP r1, #0              ; Check if null terminator
+                BEQ print_end           ; if null halt
+                STR r1, r2              ; Store r1 into TX_FIFO (UART_TX)
+                ADD r0, r0, #1                          
+                B print_loop            ; Else loop to Line 3
+print_end       B resume
+
+intro  "The first 10 fibonacci numbers are:\n"
 mask    0x0000000F      ; 4 Bit mask
 sp_st   0x00000100      ; Stack pointer start position
 tx_fifo 0xF0000000      ; TX_FIFO = UART controller address
